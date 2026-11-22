@@ -13,7 +13,7 @@ core::arch::global_asm!(
     r#"
     // Work around https://github.com/rust-lang/rust/issues/127269
     .fpu vfp3
-        
+
     .pushsection .text._asm_default_svc_handler
     .arm
     .global _asm_default_svc_handler
@@ -31,9 +31,13 @@ core::arch::global_asm!(
     r#"
         mrs     r0, spsr                  // Load processor status that was banked on entry
         tst     r0, {t_bit}               // SVC occurred from Thumb state?
-        ldrbne  r0, [lr,#-2]              // Yes: Load 1-byte immediate
-        ldreq   r0, [lr,#-4]              // No: Load word and...
-        biceq   r0, r0, #0xFF000000       // ...extract 3-byte immediate
+        beq     1f
+        ldrb    r0, [lr,#-2]              // Yes: Load 1-byte immediate
+        b       2f
+    1:
+        ldr     r0, [lr,#-4]              // No: Load word and...
+        bic     r0, r0, #0xFF000000       // ...extract 3-byte immediate
+    2:
         mov     r1, r12                   // Pass the stacked integer registers in r1
         bl      _svc_handler              // Call C handler in SVC mode
         mov     lr, r0                    // Move r0 out of the way - restore_fpu_context will trash it

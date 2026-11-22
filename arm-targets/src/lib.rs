@@ -265,12 +265,12 @@ impl Isa {
 
     /// Decode a target string
     pub fn get(target: &str) -> Option<Isa> {
-        if target.starts_with("arm") {
+        if target.starts_with("aarch64") || target.starts_with("arm64") {
+            Some(Isa::A64)
+        } else if target.starts_with("arm") {
             Some(Isa::A32)
         } else if target.starts_with("thumb") {
             Some(Isa::T32)
-        } else if target.starts_with("aarch64") {
-            Some(Isa::A64)
         } else {
             None
         }
@@ -407,14 +407,24 @@ impl Arch {
         {
             Some(Arch::Armv7R)
         } else if target.starts_with("armv8r-")
+            || target.starts_with("armebv8r-")
             || target.starts_with("aarch64r82-")
             || target.starts_with("aarch64v8r-")
             || target.starts_with("thumbv8r-")
         {
             Some(Arch::Armv8R)
-        } else if target.starts_with("armv7a-") || target.starts_with("thumbv7a-") {
+        } else if target.starts_with("armv7a-")
+            || target.starts_with("armebv7a-")
+            || target.starts_with("thumbv7a-")
+        {
             Some(Arch::Armv7A)
-        } else if target.starts_with("aarch64-") || target.starts_with("aarch64be-") {
+        } else if target.starts_with("aarch64-")
+            || target.starts_with("aarch64_be-")
+            || target.starts_with("arm64")
+            || target.starts_with("armv8a-")
+            || target.starts_with("armebv8a")
+            || target.starts_with("thumbv8a-")
+        {
             Some(Arch::Armv8A)
         } else if target.starts_with("arm-")
             || target.starts_with("armv6-")
