@@ -957,8 +957,11 @@ core::arch::global_asm!(
         mov     r2, {hactlr_bits}
         orr     r1, r1, r2
         mcr     p15, 4, r1, c1, c0, 1
-        // Program the SPSR - enter system mode (0x1F) in Arm mode with IRQ, FIQ masked
-        mov		r1, {sys_mode}
+        // Preserve the current data endianness when entering system mode
+        // in Arm state with IRQ and FIQ masked.
+        mrs     r1, cpsr
+        and     r1, r1, {cpsr_e}
+        orr     r1, r1, {sys_mode}
         msr		spsr_hyp, r1
         adr		r1, 1f
         msr		elr_hyp, r1
@@ -998,6 +1001,7 @@ core::arch::global_asm!(
     .size _default_start, . - _default_start
     "#,
     cpsr_mode_hyp = const ProcessorMode::Hyp as u8,
+    cpsr_e = const Cpsr::new_with_raw_value(0).with_e(true).raw_value(),
     hactlr_bits = const {
         Hactlr::new_with_raw_value(0)
             .with_cpuactlr(true)
